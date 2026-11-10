@@ -1,0 +1,60 @@
+manifest_version: 2
+api_version: 1
+name: buffrizz
+version: "0.1.0"
+description: >-
+  Pair with your Hermes agent in the official Freebuff CLI inside a Hermes pane,
+  and queue coding tasks for it. The official `freebuff` binary runs in a plugin-owned
+  PTY; ads stay visible. You sign in and click Run in the pane; the agent only
+  enqueues prompts and later reads git status/diff stats. Disclosure: invokes the
+  official Freebuff CLI (network to Freebuff, ads, possible AI-training labels);
+  starts a loopback supervisor and a long-running PTY; runs git in an allowlisted
+  project and may create a worktree or branch per job; stores job state in
+  profile-scoped plugin data; does not read Hermes or Freebuff credential stores
+  or keychains; first login is pane-only; the user must click Run for each free-tier
+  job; official Terms require a human to remain present. Optional paid unattended
+  jobs use the official Codebuff SDK with CODEBUFF_API_KEY and are off by default.
+  No telemetry.
+author: mojomast
+license: MIT
+homepage: https://github.com/mojomast/hermes-buffrizz
+requires_hermes: ">=0.23.0"
+platforms: [linux, macos]
+tags: [freebuff, codebuff, coding, pane]
+provides_tools:
+  - buffrizz_status
+  - buffrizz_connect
+  - buffrizz_job
+provides_hooks:
+  - post_tool_call
+provides_middleware: []
+requires_env:
+  - name: CODEBUFF_API_KEY
+    description: >-
+      Optional. Paid Codebuff API key for buffrizz_job op=paid_run when
+      paid_unattended is enabled. Leave unset to use only the official Freebuff
+      pane queue. Never used as a Freebuff free-tier token.
+    url: https://www.codebuff.com/api-keys
+    secret: true
+config_schema:
+  allowlist_roots:
+    type: list
+    default: []
+    description: >-
+      Project roots the official Freebuff CLI may use. One absolute path per
+      entry. The model cannot add a root. Filesystem roots are rejected.
+  idle_seconds:
+    type: int
+    default: 12
+    description: Seconds of PTY silence after activity before a running job is treated as idle.
+  job_timeout_seconds:
+    type: int
+    default: 1800
+    description: Maximum seconds a free-tier job may run after you click Run.
+  paid_unattended:
+    type: bool
+    default: false
+    description: >-
+      If true, buffrizz_job op=paid_run may use the official paid Codebuff SDK
+      with CODEBUFF_API_KEY. Off by default. Never used for Freebuff free mode.
+capabilities: []
